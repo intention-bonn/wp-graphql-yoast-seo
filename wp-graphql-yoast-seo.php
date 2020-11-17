@@ -78,7 +78,7 @@ add_action('graphql_init', function () {
                 return __return_empty_string();
             }
 
-            return wpcom_vip_attachment_url_to_postid($image['url']);
+            return wp_gql_seo_attachment_url_to_postid($image['url']);
         }
     }
     if (!function_exists('wp_gql_seo_get_field_key')) {
@@ -100,33 +100,39 @@ add_action('graphql_init', function () {
         }
     }
 
-    if (!function_exists('wpcom_vip_attachment_url_to_postid')) {
-        function wpcom_vip_attachment_url_to_postid($url)
-        {
-            $cache_key = wpcom_vip_attachment_cache_key($url);
-            $id = wp_cache_get($cache_key);
-            if (false === $id) {
-                $id = attachment_url_to_postid($url); // phpcs:ignore
-                if (empty($id)) {
-                    wp_cache_set(
-                        $cache_key,
-                        'not_found',
-                        'default',
-                        12 * HOUR_IN_SECONDS + mt_rand(0, 4 * HOUR_IN_SECONDS) // phpcs:ignore
-                    );
-                } else {
-                    wp_cache_set(
-                        $cache_key,
-                        $id,
-                        'default',
-                        24 * HOUR_IN_SECONDS + mt_rand(0, 12 * HOUR_IN_SECONDS) // phpcs:ignore
-                    );
-                }
-            } elseif ('not_found' === $id) {
-                return false;
+    if (!function_exists('wp_gql_seo_attachment_url_to_postid')) {
+        if (function_exists('wpcom_vip_attachment_url_to_postid')) {
+            function wp_gql_seo_attachment_url_to_postid($url){
+                wpcom_vip_attachment_url_to_postid($url);
             }
+        } else {
+            function wp_gql_seo_attachment_url_to_postid($url)
+            {
+                $cache_key = wpcom_vip_attachment_cache_key($url);
+                $id = wp_cache_get($cache_key);
+                if (false === $id) {
+                    $id = WPSEO_Image_Utils::get_attachment_by_url($url); // phpcs:ignore
+                    if (empty($id)) {
+                        wp_cache_set(
+                            $cache_key,
+                            'not_found',
+                            'default',
+                            12 * HOUR_IN_SECONDS + mt_rand(0, 4 * HOUR_IN_SECONDS) // phpcs:ignore
+                        );
+                    } else {
+                        wp_cache_set(
+                            $cache_key,
+                            $id,
+                            'default',
+                            24 * HOUR_IN_SECONDS + mt_rand(0, 12 * HOUR_IN_SECONDS) // phpcs:ignore
+                        );
+                    }
+                } elseif ('not_found' === $id) {
+                    return false;
+                }
 
-            return $id;
+                return $id;
+            }
         }
     }
 
@@ -725,7 +731,7 @@ add_action('graphql_init', function () {
                                             ->twitter_description
                                     ),
                                     'twitterImage' => DataSource::resolve_post_object(
-                                        wpcom_vip_attachment_url_to_postid(
+                                        wp_gql_seo_attachment_url_to_postid(
                                             YoastSEO()->meta->for_post($post->ID)
                                                 ->twitter_image
                                         ),
