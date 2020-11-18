@@ -93,22 +93,28 @@ add_action('graphql_init', function () {
         }
     }
 
-    if (!function_exists('wpcom_vip_attachment_url_to_postid')) {
-        function wpcom_vip_attachment_cache_key($url)
-        {
-            return 'wpcom_vip_attachment_url_post_id_' . md5($url);
+    if (!function_exists('wp_gql_seo_attachment_cache_key')) {
+        if (function_exists('wpcom_vip_attachment_cache_key')) {
+            function wp_gql_seo_attachment_cache_key($url){
+                return wpcom_vip_attachment_cache_key($url);
+            }
+        } else {
+            function wp_gql_seo_attachment_cache_key($url)
+            {
+                return 'wpcom_vip_attachment_url_post_id_' . md5($url);
+            }
         }
     }
 
     if (!function_exists('wp_gql_seo_attachment_url_to_postid')) {
         if (function_exists('wpcom_vip_attachment_url_to_postid')) {
             function wp_gql_seo_attachment_url_to_postid($url){
-                return wpcom_vip_attachment_url_to_postid($url);
+                return wpcom_vip_attachment_url_to_postid($url);    
             }
         } else {
             function wp_gql_seo_attachment_url_to_postid($url)
             {
-                $cache_key = wpcom_vip_attachment_cache_key($url);
+                $cache_key = wp_gql_seo_attachment_cache_key($url);
                 $id = wp_cache_get($cache_key);
                 if (false === $id) {
                     $id = WPSEO_Image_Utils::get_attachment_by_url($url); // phpcs:ignore
