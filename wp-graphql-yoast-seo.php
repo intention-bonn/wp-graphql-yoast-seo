@@ -103,7 +103,7 @@ add_action('graphql_init', function () {
     if (!function_exists('wp_gql_seo_attachment_url_to_postid')) {
         if (function_exists('wpcom_vip_attachment_url_to_postid')) {
             function wp_gql_seo_attachment_url_to_postid($url){
-                wpcom_vip_attachment_url_to_postid($url);
+                return wpcom_vip_attachment_url_to_postid($url);
             }
         } else {
             function wp_gql_seo_attachment_url_to_postid($url)
